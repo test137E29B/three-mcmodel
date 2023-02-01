@@ -48,6 +48,12 @@ export class MinecraftTextureLoader extends AbstractLoader {
     return texture
   }
 
+  public loadAsync(url: string): Promise<MinecraftTexture> {
+    return new Promise((resolve, reject) => {
+      this.load(url, resolve, undefined, reject);
+    })
+  }
+
   public setCrossOrigin (value: string) {
     this.crossOrigin = value
     return this

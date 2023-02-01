@@ -10,6 +10,7 @@ export abstract class AbstractLoader {
   constructor (public manager: LoadingManager = DefaultLoadingManager) { }
 
   public abstract load (url: string, onLoad?: OnLoad, onProgress?: OnProgress, onError?: OnError): any
+  public abstract loadAsync (url: string): Promise<any>
 
   public setPath (value: string) {
     this.path = value

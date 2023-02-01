@@ -63,4 +63,10 @@ export class MinecraftModelLoader extends AbstractLoader {
 
     loader.load(url, handleLoad, onProgress, onError)
   }
+
+  public loadAsync(url: string): Promise<MinecraftModelMesh> {
+    return new Promise((resolve, reject) => {
+      this.load(url, resolve, undefined, reject);
+    })
+  }
 }
