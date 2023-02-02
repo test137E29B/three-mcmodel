@@ -111,16 +111,17 @@ interface GroupAttributes {
   vertices: number[]
   uvs: number[]
   indices: number[]
+  tintEnabled: boolean
 }
 
 class GroupedAttributesBuilder {
   private groups: { [path: string]: GroupAttributes } = {}
   private groupMapping: { [variable: string]: GroupAttributes } = {}
-  private missingGroup: GroupAttributes = { vertices: [], uvs: [], indices: [] }
+  private missingGroup: GroupAttributes = { vertices: [], uvs: [], indices: [], tintEnabled: false }
 
   constructor (textures: { [name: string]: string }) {
     for (const texturePath of new Set(Object.values(textures))) {
-      this.groups[texturePath] = { vertices: [], uvs: [], indices: [] }
+      this.groups[texturePath] = { vertices: [], uvs: [], indices: [], tintEnabled: false }
     }
 
     for (const variable in textures) {
@@ -128,15 +129,19 @@ class GroupedAttributesBuilder {
     }
   }
 
-  public getContext (textureVariable: string) {
-    return this.groupMapping[textureVariable] || this.missingGroup
+  public getContext (textureVariable: string, tintIndex?: number) {
+    const group = this.groupMapping[textureVariable] || this.missingGroup
+
+    group.tintEnabled = tintIndex !== undefined ? tintIndex !== -1 : false;
+
+    return group;
   }
 
   public getAttributes () {
     let { vertices, uvs, indices } = this.missingGroup
     let indexCount = indices.length
 
-    const groups = [{ start: 0, count: indexCount, materialIndex: 0 }]
+    const groups = [{ start: 0, count: indexCount, materialIndex: 0, tintEnabled: false }]
 
     groups.push(...Object.keys(this.groups).sort().map((path, i) => {
       const group = this.groups[path]
@@ -151,7 +156,7 @@ class GroupedAttributesBuilder {
 
       indexCount += count
 
-      return { start, count, materialIndex: i + 1 }
+      return { start, count, materialIndex: i + 1, tintEnabled: group.tintEnabled }
     }))
 
     return { vertices, uvs, indices, groups }
@@ -170,6 +175,14 @@ export class MinecraftModelGeometry extends BufferGeometry {
     for (const { start, count, materialIndex } of groups) {
       this.addGroup(start, count, materialIndex)
     }
+
+    this.tints = groups.map(g => g.tintEnabled);
+  }
+
+  protected readonly tints: boolean[]
+
+  public faceHasTint(index: number) {
+    return this.tints[index + 1];
   }
 
   public static computeAttributes (model: MinecraftModel) {
@@ -188,7 +201,7 @@ export class MinecraftModelGeometry extends BufferGeometry {
           continue
         }
 
-        const { vertices, uvs, indices } = builder.getContext(face.texture)
+        const { vertices, uvs, indices } = builder.getContext(face.texture, face.tintindex)
 
         const i = vertices.length / 3
         indices.push(i, i + 2, i + 1)

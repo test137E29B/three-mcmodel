@@ -24,6 +24,7 @@ export interface MinecraftModelFace {
   texture: string
   uv?: ArrayVector4
   rotation?: TextureRotationAngle
+  tintindex?: number
 }
 
 export function isMinecraftModelFace (face: any): face is MinecraftModelFace {
@@ -33,7 +34,8 @@ export function isMinecraftModelFace (face: any): face is MinecraftModelFace {
     face.texture.length >= 2 &&
     face.texture[0] === '#' &&
     (face.uv === undefined || isArrayVector4(face.uv)) &&
-    (face.rotation === undefined || [0, 90, 180, 270].includes(face.rotation))
+    (face.rotation === undefined || [0, 90, 180, 270].includes(face.rotation)) &&
+    (face.tintindex !== undefined ? typeof face.tintindex === "number" : true)
   )
 }
 

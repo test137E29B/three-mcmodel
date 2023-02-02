@@ -11,7 +11,7 @@ type MaterialMapping = { [path: string]: MinecraftModelMaterial }
 export class MinecraftModelMesh extends Mesh {
   private materialMapping: MaterialMapping
 
-  constructor (model: MinecraftModel | string | any) {
+  constructor (model: MinecraftModel | string | any, tint?: number) {
     if (typeof model === 'string') {
       model = JSON.parse(model)
     }
@@ -25,7 +25,7 @@ export class MinecraftModelMesh extends Mesh {
     const sortedTextures = [...new Set(Object.values(model.textures))].sort()
     const mapping: MaterialMapping = {}
     const materials = sortedTextures
-      .map(path => mapping[path] = new MinecraftModelMaterial())
+      .map((path, index) => mapping[path] = new MinecraftModelMaterial(undefined, geometry.faceHasTint(index) ? tint : undefined))
 
     super(geometry, [new MinecraftModelMaterial(), ...materials])
 
